@@ -24,7 +24,7 @@ class Piece(object):
         return len(self.cells)
 
     def __iter__(self):
-        return iter(self.cells)
+        return iter(cell + self.pos for cell in self.cells)
 
     def __str__(self):
         res = 'Piece:'
@@ -76,6 +76,7 @@ class Piece(object):
         self.cells = normalized_cells
 
     def move(self, direction):
+        '''moves the piece in given direction.'''
         self.pos += direction
 
     def rotate_cw(self):
@@ -97,6 +98,9 @@ class Piece(object):
                 else:
                     print(' ', end='')
             print()
+
+    def copy(self):
+        return Piece(self.cells, self.color, self.pos)
 
 
 if __name__ == '__main__':
