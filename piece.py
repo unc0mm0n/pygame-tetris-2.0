@@ -19,6 +19,7 @@ class Piece(object):
         self.color = color
         self.dimensions = max(len(cell) for cell in cells)
         self.pos = pos
+        self.__normalize()
 
     def __len__(self):
         return len(self.cells)
@@ -50,7 +51,10 @@ class Piece(object):
         while len(cells) < size:
             #Generate from the last position
             direction = choice(dirs)
-            cell = cell + direction
+            new_cell = cell + direction
+            if new_cell in cells:
+                continue
+            cell = new_cell
             cells.add(cell)
 
         return cells
@@ -69,7 +73,7 @@ class Piece(object):
         vec = Vector(round(-sum/len(self)) for sum in sums)
 
         normalized_cells = set()
-        for cell in self:
+        for cell in self.cells:
             normalized_cells.add(cell + vec)
 
         self.cells = normalized_cells
@@ -81,18 +85,20 @@ class Piece(object):
     def rotate_cw(self):
         '''Rotate the piece clockwise.'''
         new_cells = set()
-        for cell in self:
+        for cell in self.cells:
             new_cells.add(Vector((-cell[1], cell[0])))
 
         self.cells = new_cells
+        self.__normalize()
 
     def rotate_ccw(self):
         '''Rotate the piece counter-clockwise.'''
         new_cells = set()
-        for cell in self:
+        for cell in self.cells:
             new_cells.add(Vector((cell[1], -cell[0])))
 
         self.cells = new_cells
+        self.__normalize()
 
     def pprint(self, size=6):
         '''Pretty prints the shape on the screen'''
@@ -114,6 +120,7 @@ if __name__ == '__main__':
 
     for _ in range(10):
         p = Piece.Random(4, 'a')
+        p.move(Vector((0, 0)))
 
         for _ in range(4):
             p.rotate_cw()

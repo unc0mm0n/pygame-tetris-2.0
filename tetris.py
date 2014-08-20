@@ -13,6 +13,9 @@ PIECE_COLORS = {
 WIDTH = 10
 HEIGHT = 22
 
+INITIAL_SPEED = 5
+SPEED_INCREMENT = 0.1
+
 
 class Tetris(object):
 
@@ -33,35 +36,74 @@ class Tetris(object):
         self.board = []
         self.playing = True
         self.piece = None
-        self.update()
+        self.next_move = None
+        self.speed = INITIAL_SPEED
+        self.timer = 1000/self.speed
+        self.drop_count = 0
 
-    def piece_can_down(self, piece):
-        '''  Returh True if the given piece can go down without leaving the
-            Board or coliding with another piece.'''
-        new_piece = piece.copy()
-        new_piece.move(DOWN)
-        for cell in new_piece:
-            print(cell)
+    def is_legal(self, piece):
+        ''' Checks if the piece can be legally placed in self's board'''
+        for cell in piece:
             if cell[1] > self.height:
+                return False
+            if cell[0] < 0 or cell[0] > self.width:
                 return False
             if len([coor for coor in self.board if cell in coor]) > 0:
                 return False
         return True
 
-    def update(self):
-        '''Move the game one step forward.'''
+    def piece_can_move(self, piece, dir):
+        '''  Returh True if the given piece can go down without leaving the
+            Board or coliding with another piece.'''
+        new_piece = piece.copy()
+        new_piece.move(dir)
+        return self.is_legal(new_piece)
+
+    def rotate_piece(self, piece, rotate):
+        new_piece = piece.copy()
+        if rotate < 0:
+            new_piece.rotate_cw()
+        else:
+            new_piece.rotate_ccw()
+
+        if self.is_legal(new_piece):
+            if rotate < 0:
+                piece.rotate_cw()
+            else:
+                piece.rotate_ccw()
+
+    def update(self, dt, move=None, rotate=0):
+        '''
+        Move the game one step forward.
+        dt is the time passed since last call
+        move is a direction for the piece to move
+        rotate rotates the piece, negative for cw and positive for ccw
+        '''
         if not self.piece:
             color = choice(tuple(PIECE_COLORS.values()))
             pos = Vector((self.width // 2, 0))
             self.piece = Piece.Random(self.size, color, pos)
-            if not self.piece_can_down(self.piece):
+            if not self.piece_can_move(self.piece, DOWN):
                 self.playing = False
 
-        if self.piece_can_down(self.piece):
+        if move and self.piece_can_move(self.piece, move):
+            self.piece.move(move)
+
+        if rotate:
+            self.rotate_piece(self.piece, rotate)
+
+        self.timer -= dt
+        if self.timer > 0:
+            return
+
+        self.timer += 1000/self.speed
+
+        if self.piece_can_move(self.piece, DOWN):
             self.piece.move(DOWN)
         else:
             for cell in self.piece:
-                self.board.append((cell, self.piece.color))
+                self.board.append((cell, self.drop_count))
+            self.drop_count = (self.drop_count + 1) % 10
             self.piece = None
 
     def pprint(self):
@@ -73,7 +115,7 @@ class Tetris(object):
                 occupied[cell] = ' C'
 
         for cell in self.board:
-            occupied[cell[0]] = ' O'
+            occupied[cell[0]] = ' {}'.format(cell[1])
 
         for y in range(self.height + 1):
             print('|', end='')
@@ -87,7 +129,7 @@ if __name__ == '__main__':
 
     for _ in range(3):
         while t.playing:
-            t.update()
+            t.update(1000, move=Vector((choice((0, 1, -1)), 0)), rotate=choice((-1, 0, 0, 0, 0, 0, 0, 0, 1)))
             t.pprint()
             sleep(0.1)
         t.reset()
