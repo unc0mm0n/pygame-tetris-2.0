@@ -42,17 +42,16 @@ class Piece(object):
     def __generate_piece(size):
         '''Returns a list of Vectors for a piece of given size'''
         cells = set()
-        loc = Vector((0, 0))
+        cell = Vector((0, 0))
 
-        cells.add(loc)
+        cells.add(cell)
         dirs = (UP, LEFT, DOWN, RIGHT)
 
         while len(cells) < size:
             #Generate from the last position
-            cell = choice(tuple(cells))
             direction = choice(dirs)
-            loc = cell + direction
-            cells.add(loc)
+            cell = cell + direction
+            cells.add(cell)
 
         return cells
 
@@ -84,6 +83,14 @@ class Piece(object):
         new_cells = set()
         for cell in self:
             new_cells.add(Vector((-cell[1], cell[0])))
+
+        self.cells = new_cells
+
+    def rotate_ccw(self):
+        '''Rotate the piece counter-clockwise.'''
+        new_cells = set()
+        for cell in self:
+            new_cells.add(Vector((cell[1], -cell[0])))
 
         self.cells = new_cells
 
