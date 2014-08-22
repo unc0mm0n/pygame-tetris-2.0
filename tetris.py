@@ -24,22 +24,21 @@ class Tetris(object):
     Use reset() to start a new game.
     '''
 
-    def __init__(self, size=4):
+    def __init__(self, size=4, width=WIDTH, height=HEIGHT):
         '''Init with a optional size parameter for the size of each piece.'''
         self.size = size
-        self.width = WIDTH
-        self.height = HEIGHT
+        self.width = width - 1
+        self.height = height - 1
         self.reset()
 
     def reset(self):
         '''Restart the game.'''
-        self.board = []
-        self.playing = True
+        self.board = {}
         self.piece = None
         self.next_move = None
         self.speed = INITIAL_SPEED
         self.timer = 1000/self.speed
-        self.drop_count = 0
+        self.lines = 0
 
     def is_legal(self, piece):
         ''' Checks if the piece can be legally placed in self's board'''
@@ -48,7 +47,7 @@ class Tetris(object):
                 return False
             if cell[0] < 0 or cell[0] > self.width:
                 return False
-            if len([coor for coor in self.board if cell in coor]) > 0:
+            if cell in self.board:
                 return False
         return True
 
@@ -60,6 +59,10 @@ class Tetris(object):
         return self.is_legal(new_piece)
 
     def rotate_piece(self, piece, rotate):
+        '''
+        rotates the  given piece if legal.
+        negative for cw rotation and positive for ccw rotation
+        '''
         new_piece = piece.copy()
         if rotate < 0:
             new_piece.rotate_cw()
@@ -72,6 +75,31 @@ class Tetris(object):
             else:
                 piece.rotate_ccw()
 
+    def score_lines(self):
+        ''' Scores the complete lines on the board.'''
+        score = 0
+        complete_lines = []
+
+        for y in range(self.height + 1):
+            if all([(x, y) in self.board for x in range(self.width + 1)]):
+                score += 1
+                complete_lines.append(y)
+
+        for line in complete_lines:
+            self.remove_line(line)
+
+        return score
+
+    def remove_line(self, line):
+        ''' Remove line from the board, dropping all highers lines.'''
+        new_board = {}
+        for cell in list(self.board.keys()):
+            if cell[1] > line:
+                new_board[cell] = self.board[cell]
+            if cell[1] < line:
+                new_board[(cell[0], cell[1] + 1)] = self.board[cell]
+        self.board = new_board
+
     def update(self, dt, move=None, rotate=0):
         '''
         Move the game one step forward.
@@ -81,10 +109,10 @@ class Tetris(object):
         '''
         if not self.piece:
             color = choice(tuple(PIECE_COLORS.values()))
-            pos = Vector((self.width // 2, 0))
+            pos = Vector((self.width // 2, -1))
             self.piece = Piece.Random(self.size, color, pos)
             if not self.piece_can_move(self.piece, DOWN):
-                self.playing = False
+                return False
 
         if move and self.piece_can_move(self.piece, move):
             self.piece.move(move)
@@ -94,7 +122,7 @@ class Tetris(object):
 
         self.timer -= dt
         if self.timer > 0:
-            return
+            return True
 
         self.timer += 1000/self.speed
 
@@ -102,9 +130,13 @@ class Tetris(object):
             self.piece.move(DOWN)
         else:
             for cell in self.piece:
-                self.board.append((cell, self.drop_count))
-            self.drop_count = (self.drop_count + 1) % 10
+                self.board[cell] = self.piece.color
             self.piece = None
+
+        self.lines += self.score_lines()
+        self.speed += self.lines * SPEED_INCREMENT
+
+        return True
 
     def pprint(self):
         '''Pretty print the board.'''
@@ -115,21 +147,29 @@ class Tetris(object):
                 occupied[cell] = ' C'
 
         for cell in self.board:
-            occupied[cell[0]] = ' {}'.format(cell[1])
+            occupied[cell] = ' {}'.format(self.board[cell])
 
         for y in range(self.height + 1):
             print('|', end='')
             for x in range(self.width + 1):
                 print(occupied.get((x, y), ' .'), end='')
             print(' |')
-        print('--' * self.width)
+        print('--' * self.width * 2)
 
 if __name__ == '__main__':
-    t = Tetris()
+    t = Tetris(2, 3, 20)
+    # t.board = {(22, 0): 1, (22, 1): 1, (21, 0): 1, (21, 1): 1, (21, 2): 2}
+    # t.score_lines()
+    # t.width = 2
+    # t.height = 4
+    # t.board = {(0, 3): 1, (1, 3): 1, (1, 2): 1}
+    # t.update(10000)
+    # t.pprint()
 
-    for _ in range(3):
-        while t.playing:
-            t.update(1000, move=Vector((choice((0, 1, -1)), 0)), rotate=choice((-1, 0, 0, 0, 0, 0, 0, 0, 1)))
-            t.pprint()
-            sleep(0.1)
-        t.reset()
+    count = 0
+    while True:
+        t.update(300, move=Vector((choice((0, 1, -1)), 0)), rotate=choice((-1, 0, 0, 0, 0, 0, 0, 0, 1)))
+        t.pprint()
+        sleep(0.3)
+    t.pprint()
+    print(t.lines, count)
