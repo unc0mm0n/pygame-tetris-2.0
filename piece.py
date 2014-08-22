@@ -89,7 +89,6 @@ class Piece(object):
             new_cells.add(Vector((-cell[1], cell[0])))
 
         self.cells = new_cells
-        self.__normalize()
 
     def rotate_ccw(self):
         '''Rotate the piece counter-clockwise.'''
@@ -98,7 +97,6 @@ class Piece(object):
             new_cells.add(Vector((cell[1], -cell[0])))
 
         self.cells = new_cells
-        self.__normalize()
 
     def pprint(self, size=6):
         '''Pretty prints the shape on the screen'''
