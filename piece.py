@@ -52,8 +52,6 @@ class Piece(object):
             #Generate from the last position
             direction = choice(dirs)
             new_cell = cell + direction
-            if new_cell in cells:
-                continue
             cell = new_cell
             cells.add(cell)
 
