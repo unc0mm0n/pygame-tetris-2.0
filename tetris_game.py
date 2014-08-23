@@ -142,5 +142,4 @@ class TetrisGame(object):
 if __name__ == '__main__':
     pygame.init()
     t = TetrisGame()
-    t.start()
     pygame.quit()
