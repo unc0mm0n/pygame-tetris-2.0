@@ -102,6 +102,8 @@ class Tetris(object):
         for line in complete_lines:
             self.remove_line(line)
 
+        self.speed += score * SPEED_INCREMENT
+
         return score
 
     def remove_line(self, line):
@@ -135,7 +137,6 @@ class Tetris(object):
             self.rotate_piece(self.piece, rotate)
 
         self.lines += self.score_lines()
-        self.speed += self.lines * SPEED_INCREMENT
 
         self.timer -= dt
         if self.timer > 0:
