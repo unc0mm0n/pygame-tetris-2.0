@@ -3,7 +3,7 @@ from pygame.locals import *
 from utils import *
 from tetris import *
 
-PIECE_SIZE = 1
+PIECE_SIZE = 4
 WORLD_SIZE = Vector((36, 24))
 BLOCK_SIZE = 20
 
@@ -48,11 +48,16 @@ class TetrisGame(object):
     def start(self):
         '''Start a game of tetris, reseting the tetrist object.'''
         self.tetris.reset()
+        self.next_move = None
+        self.next_rotate = None
         self.playing = True
+        self.play()
 
     def update(self, dt):
         '''Update the tetris object by dt time, passing any movement orders.'''
-        self.playing = self.tetris.update(dt, move=Vector((choice((0, 1, -1)), 0)), rotate=choice((-1, 0, 0, 0, 0, 0, 0, 0, 1)))
+        self.playing = self.tetris.update(dt, self.next_move, self.next_rotate)
+        self.next_rotate = None
+        self.next_move = None
 
     def draw(self):
         '''Draw self into the screen.'''
@@ -81,22 +86,23 @@ class TetrisGame(object):
                 if e.type == QUIT:
                     return
                 elif e.type == KEYDOWN:
-                    self.input(e)
+                    self.input(e.key)
 
             if self.playing:
                 self.update(dt)
             self.draw()
 
     def input(self, e):
-        if e.key in MOVE_KEYS:
+        '''Handles keyboard input.'''
+        if e in MOVE_KEYS:
             self.next_move = MOVE_KEYS[e]
-        elif e.key in ROTATE_KEYS:
+        elif e in ROTATE_KEYS:
             self.next_rotate = ROTATE_KEYS[e]
-        elif e.key == K_SPACE:
+        elif e == K_SPACE:
             if self.playing:
                 self.tetris.drop_piece()
             else:
-                self.reset()
+                self.start()
 
     def draw_text(self, text, block, color=TEXT_COLOR):
         '''Draws text on screen at block.'''
@@ -136,5 +142,5 @@ class TetrisGame(object):
 if __name__ == '__main__':
     pygame.init()
     t = TetrisGame()
-    t.play()
+    t.start()
     pygame.quit()
