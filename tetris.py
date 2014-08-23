@@ -7,7 +7,9 @@ PIECE_COLORS = {
     'RED': (255, 0, 0),
     'GREEN': (0, 255, 0),
     'BLUE': (0, 0, 255),
-    'YELLOW': (0, 255, 255)
+    'YELLOW': (255, 255, 50),
+    'CYAN': (50, 255, 255),
+    'MAGENTA': (255, 50, 255),
 }
 
 WIDTH = 10
@@ -26,6 +28,7 @@ class Tetris(object):
 
     def __init__(self, size=4, width=WIDTH, height=HEIGHT):
         '''Init with a optional size parameter for the size of each piece.'''
+
         self.size = size
         self.width = width - 1
         self.height = height - 1
@@ -39,6 +42,17 @@ class Tetris(object):
         self.speed = INITIAL_SPEED
         self.timer = 1000/self.speed
         self.lines = 0
+
+    def get_board(self):
+        '''Return a copy of the current board with the current piece in it.'''
+        board = {}
+        for cell in self.board:
+            board[cell] = self.board[cell]
+
+        if self.piece:
+            for cell in self.piece:
+                board[cell] = self.piece.color
+        return board
 
     def is_legal(self, piece):
         ''' Checks if the piece can be legally placed in self's board'''
@@ -97,7 +111,7 @@ class Tetris(object):
             if cell[1] > line:
                 new_board[cell] = self.board[cell]
             if cell[1] < line:
-                new_board[(cell[0], cell[1] + 1)] = self.board[cell]
+                new_board[Vector((cell[0], cell[1] + 1))] = self.board[cell]
         self.board = new_board
 
     def update(self, dt, move=None, rotate=0):
@@ -169,7 +183,7 @@ if __name__ == '__main__':
     count = 0
     while True:
         t.update(300, move=Vector((choice((0, 1, -1)), 0)), rotate=choice((-1, 0, 0, 0, 0, 0, 0, 0, 1)))
-        t.pprint()
+        print(t.board)
         sleep(0.3)
     t.pprint()
     print(t.lines, count)
