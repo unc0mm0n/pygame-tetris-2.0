@@ -66,7 +66,7 @@ class TetrisGame(object):
         self.draw_borders()
 
         for cell, color in self.tetris.get_board().items():
-            rect = self.get_block(self.get_coor_from_board(cell), 0.1)
+            rect = self.get_block(self.get_coor_from_board(cell), 1)
             pygame.draw.rect(self.screen, color, rect)
 
         self.draw_text('Lines:', self.get_block(self.text_position))
