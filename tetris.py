@@ -134,6 +134,9 @@ class Tetris(object):
         if rotate:
             self.rotate_piece(self.piece, rotate)
 
+        self.lines += self.score_lines()
+        self.speed += self.lines * SPEED_INCREMENT
+
         self.timer -= dt
         if self.timer > 0:
             return True
@@ -147,15 +150,17 @@ class Tetris(object):
                 self.board[cell] = self.piece.color
             self.piece = None
 
-        self.lines += self.score_lines()
-        self.speed += self.lines * SPEED_INCREMENT
-
         return True
 
     def drop_piece(self):
         '''completely drop the current piece.'''
         while self.piece_can_move(self.piece, DOWN):
             self.piece.move(DOWN)
+
+        #reset the cell
+        for cell in self.piece:
+            self.board[cell] = self.piece.color
+        self.piece = None
 
     def pprint(self):
         '''Pretty print the board.'''
