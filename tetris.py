@@ -152,6 +152,11 @@ class Tetris(object):
 
         return True
 
+    def drop_piece(self):
+        '''completely drop the current piece.'''
+        while self.piece_can_move(self.piece, DOWN):
+            self.piece.move(DOWN)
+
     def pprint(self):
         '''Pretty print the board.'''
         occupied = {}
