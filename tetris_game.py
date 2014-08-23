@@ -20,8 +20,8 @@ MOVE_KEYS = {
 }
 
 ROTATE_KEYS = {
-    K_a: -1,
-    K_d: 1
+    K_UP: -1,
+    K_DOWN: 1
 }
 
 
